@@ -33,26 +33,29 @@ timeInit = num2str(now());
 
 parfor i = 1:nReps
     [v_sol, corrval, nvar, ~, fTime, fIter] = ...
-        falcon(m, varargin{:});
+        falcon(m, varargin{1:end-2});
     v_sol_Dist(i, :)  = columnVector(v_sol)';
     corrval_Dist(i)   = corrval;
     fTime_Dist(i)     = fTime;
     fIter_Dist(i)     = fIter;
 end
 
-v_sol   = mean(v_sol_Dist)';
+v_sol   = mean(v_sol_Dist',2);
 nvar    = mean(nvar_Dist);
 corrval = mean(corrval_Dist);
 fTime   = mean(fTime_Dist);
 fIter   = mean(fIter_Dist);
 
-v_sol_s   = std(v_sol_Dist)';
+v_sol_s   = std(v_sol_Dist',0,2);
 nvar_s    = std(nvar_Dist);
 corrval_s = std(corrval_Dist);
 fTime_s   = std(fTime_Dist);
 fIter_s   = std(fIter_Dist);
 
-fileNameOut = ['falcon_' num2str(nReps) '_' timeInit '.mat'];
+genedata_filename = varargin{end};
+fileNameOut = ['falcon_' genedata_filename '_' num2str(nReps) '_' timeInit '.mat'];
+outputDir = varargin{end-1};
+fileNameOut = [outputDir filesep fileNameOut];
 save(fileNameOut, 'v_sol', 'v_sol_s', 'v_sol_Dist', ...
     'corrval', 'corrval_s', 'corrval_Dist',         ...
     'nvar', 'nvar_s', 'nvar_Dist',                  ...
