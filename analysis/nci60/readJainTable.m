@@ -1,4 +1,4 @@
-function [celllinesarray metsarray coretable FVAvminarray FVAvmaxarray] = ...
+function [cellLinesarray metsArray coreTable FVAVminArray FVAVmaxArray] = ...
     readJainTable(nomean)
 %INPUT
 % Assumes Jain's table is in the running directory
@@ -11,26 +11,26 @@ warning('off', 'MATLAB:xlsread:ActiveX');
     ['Supp Table 3 A community-driven global reconstruction ' ... 
      'of human metabolism 95.xls']);
 [height width] = size(excnumarray);
-coretable1 = excnumarray(8:98, 8:width);
-celllinesarray1 = exctextarray(9, 10:2:128);
-coretable = [];
-celllinesarray = {};
+coreTable1 = excnumarray(8:98, 8:width);
+cellLinesArray1 = exctextarray(9, 10:2:128);
+coreTable = [];
+cellLinesArray = {};
 
-for i = 1:length(celllinesarray1)
-    celllinesarray{end + 1} = celllinesarray1{i};
+for i = 1:length(cellLinesArray1)
+    cellLinesArray{end + 1} = cellLinesArray1{i};
     if exist('nomean','var')
         if nomean
             % In case we want to look at individual replicates
-            coretable(:, (end+1):(end+2)) = coretable1(:, (i*2-1):i*2);
+            coreTable(:, (end+1):(end+2)) = coreTable1(:, (i*2-1):i*2);
         else
-            coretable(:, end + 1) = mean(coretable1(:, (i*2-1):i*2), 2);
+            coreTable(:, end + 1) = mean(coreTable1(:, (i*2-1):i*2), 2);
         end
     else
-      coretable(:, end + 1) = mean(coretable1(:, (i*2-1):i*2), 2);
+      coreTable(:, end + 1) = mean(coreTable1(:, (i*2-1):i*2), 2);
     end
 end
-metsarray = exctextarray(10:100, 2);
-FVAvminarray = excnumarray(8:98, 1);
-FVAvmaxarray = excnumarray(8:98, 3);
+metsArray = exctextarray(10:100, 2);
+FVAVminArray = excnumarray(8:98, 1);
+FVAVmaxArray = excnumarray(8:98, 3);
 end
 

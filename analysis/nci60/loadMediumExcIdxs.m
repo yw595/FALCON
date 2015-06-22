@@ -13,5 +13,7 @@ mediumExc = {'EX_gly(e)','EX_arg_L(e)','EX_asp_L(e)', ...
 mediumExcIdxs = [];
 for i = 1:length(mediumExc)
     mediumExcIdx = find(ismember(model.rxns, mediumExc{i}));
-    mediumExcIdxs(end + 1) = mediumExcIdx;
+    if ~isempty(mediumExcIdx)
+       mediumExcIdxs(end + 1) = mediumExcIdx;
+    end
 end
