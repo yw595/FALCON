@@ -6,6 +6,13 @@ gurobi.log
 *.stackdump
 minDisj
 *.exe
+*.mat
+*.txt
+*_out
+*.flux
+*[0-9]
+*.xls
+*.csv
 
 #ATS dependencies
 ATSDEPCOPIES
