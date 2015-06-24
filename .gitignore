@@ -13,6 +13,7 @@ minDisj
 *[0-9]
 *.xls
 *.csv
+*.xml
 
 #ATS dependencies
 ATSDEPCOPIES

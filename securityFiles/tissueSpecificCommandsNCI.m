@@ -1,7 +1,6 @@
 [cellLinesArray, ~, ~] = readJainTable();
 
 for i=1:length(cellLinesArray)
-    ['NCI60Sims' filesep 'nci60prot' filesep convertExpressionFileName(cellLinesArray{i}) '.csv']
     if ~exist(['NCI60Sims' filesep 'nci60prot' filesep convertExpressionFileName(cellLinesArray{i}) '.csv'],'file')
 	continue;
     end

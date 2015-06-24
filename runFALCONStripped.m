@@ -1,4 +1,6 @@
 function runFALCONStripped(model, genedata_filename, nReps, outputDir)
+    
+
     %Whether to use new complexation method in Lee method
     useMinDisj = true;
     expCon = false;
@@ -26,6 +28,10 @@ function runFALCONStripped(model, genedata_filename, nReps, outputDir)
     minDisjTime = toc(expTime);
     minDisjTime = 0;
     
+    if ~exist(outputDir,'dir')
+        system(['mkdir ' outputDir]);
+    end
+
     [~, genedata_filename_name, genedata_filename_ext] = fileparts(genedata_filename);
     stripped_genedata_filename = [genedata_filename_name genedata_filename_ext];
     [v_falconIrr, ~, ~, ~, ~, ~, v_falconIrr_s] =         ...
@@ -35,9 +41,10 @@ function runFALCONStripped(model, genedata_filename, nReps, outputDir)
 	stripped_genedata_filename);
     v_falcon = convertIrrevFluxDistribution(v_falconIrr, matchRev);
     v_falcon_s = convertIrrevFluxDistribution(v_falconIrr_s, matchRev);
-    %save([genedata_filename '_falcon_flux.mat'], 'v_falcon');
+    disp(sum(v_falcon))
+    
     save([outputDir filesep stripped_genedata_filename '_falcon_flux.mat'], 'v_falcon');
-
+    
     fluxOutputFI = fopen([outputDir filesep stripped_genedata_filename '.flux'],'w');
     for i=1:length(v_falcon)
     	fprintf(fluxOutputFI,['R_' model.rxns{i} ',' num2str(v_falcon(i)) '\n']);
