@@ -1,17 +1,19 @@
+inputDirs = {['NCI60Sims' filesep 'nci60mRNA'],...
+    ['NCI60Sims' filesep 'nci60prot'],['NCI60Sims' filesep 'nci60prot_mRNA']};
 [cellLinesArray, ~, ~] = readJainTable();
 
-for i=1:length(cellLinesArray)
-    if ~exist(['NCI60Sims' filesep 'nci60prot' filesep convertExpressionFileName(cellLinesArray{i}) '.csv'],'file')
-	continue;
+for i=1:length(inputDirs)
+    inputDir = inputDirs{i};
+    inputFiles = dir(inputDir);
+    outputDir = [inputDir filesep 'specificModels' ];
+    for k=1:length(cellLinesArray)
+        totalData = importdata([inputDir filesep cellLinesArray{k} '.csv']);
+        expressionDataMachado = totalData.data(2,:);
+        expressionIDsMachado = totalData.data(1,:);
+        expressionIDsMachado = expressionIDsMachado(~isnan(expressionDataMachado));
+        expressionDataMachado = expressionDataMachado(~isnan(expressionDataMachado));
+        
+        makeTissueSpecificModels(outputDir, cellLinesArray{k}, origRecon2, ...
+            expressionIDsMachado, expressionDataMachado);
     end
-    totalData = importdata(['NCI60Sims' filesep 'nci60prot' filesep convertExpressionFileName(cellLinesArray{i}) '.csv']);
-    expressionDataMachado = totalData.data(2,:);
-    expressionIDsMachado = totalData.data(1,:);
-    expressionIDsMachado = expressionIDsMachado(~isnan(expressionDataMachado));
-    expressionDataMachado = expressionDataMachado(~isnan(expressionDataMachado));
-
-    expressionMedian = median(mean(expressionDataMachado,2));
-    expressionData = expressionDataMachado >= expressionMedian;
-
-    makeTissueSpecificModels(cellLinesArray{i}, origRecon2, expressionData, expressionIDsMachado, expressionDataMachado);
 end

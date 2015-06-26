@@ -9,11 +9,10 @@ for i=1:length(inputDirs)
     end
 
     for k=1:10
-    if exist([convertExpressionFileName(cellLinesArray{k}) 'SmallModel.mat'],'file')
-       
-       load([convertExpressionFileName(cellLinesArray{k}) 'SmallModel.mat'])
-       runFALCONStripped(constrainMediumExc(initializeRecon2( specificModeliMATMachado )), [inputDir filesep convertExpressionFileName(cellLinesArray{k}) '.csv'], 1, [inputDir filesep outputDir]);
-
-    end
+        if exist([convertExpressionFileName(cellLinesArray{k}) 'SmallModel.mat'],'file')      
+            load([convertExpressionFileName(cellLinesArray{k}) 'SmallModel.mat'])
+            runFALCONStripped(constrainMediumExc(initializeRecon2( specificModeliMATMachado )), ...
+            [inputDir filesep convertExpressionFileName(cellLinesArray{k}) '.csv'], 1, [inputDir filesep outputDir]);
+        end
     end
 end

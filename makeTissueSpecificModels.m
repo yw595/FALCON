@@ -1,6 +1,9 @@
-function makeTissueSpecificModels(prefix, model, expressionData, expressionIDsMachado, expressionDataMachado)
+function makeTissueSpecificModels(outputDir, prefix, model, expressionIDsMachado, expressionDataMachado)
 
-if ~exist(['smallModels' filesep 'specificModel' prefix 'iMAT.mat'],'file')
+expressionMedian = median(mean(expressionDataMachado,2));
+expressionData = expressionDataMachado >= expressionMedian;
+            
+if ~exist([outputDir filesep 'specificModel' prefix 'iMAT.mat'],'file')
     [specificModeliMAT, specificRxnsiMAT] = createTissueSpecificModel(model,expressionData,1,1,[],'Shlomi');
     [specificModelGIMME, specificRxnsGIMME] = createTissueSpecificModel(model,expressionData,1,1,[],'GIMME');
 end
@@ -12,9 +15,9 @@ specificFluxesiMATMachado = call_iMAT(model, expressionIDsMachado, expressionDat
 specificModeliMATMachado = extractSubNetwork(model,model.rxns(specificFluxesiMATMachado>0));
 specificModelGIMMEMachado = extractSubNetwork(model,model.rxns(specificFluxesGIMMEMachado>0));
 
-save(['smallModels' filesep 'specificModel' prefix 'iMAT.mat'],'specificModeliMAT');
-save(['smallModels' filesep 'specificModel' prefix 'GIMME.mat'],'specificModelGIMME');
-save(['smallModels' filesep 'specificModel' prefix 'iMATMachado.mat'],'specificModeliMATMachado');
-save(['smallModels' filesep 'specificModel' prefix 'GIMMEMachado.mat'],'specificModelGIMMEMachado');
+save([outputDir filesep 'specificModel' prefix 'iMAT.mat'],'specificModeliMAT');
+save([outputDir filesep 'specificModel' prefix 'GIMME.mat'],'specificModelGIMME');
+save([outputDir filesep 'specificModel' prefix 'iMATMachado.mat'],'specificModeliMATMachado');
+save([outputDir filesep 'specificModel' prefix 'GIMMEMachado.mat'],'specificModelGIMMEMachado');
 
 end

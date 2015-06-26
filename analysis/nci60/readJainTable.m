@@ -6,7 +6,8 @@ warning('off', 'MATLAB:xlsread:ActiveX');
     ['input' filesep 'Supp Table 3 A community-driven global reconstruction ' ... 
      'of human metabolism 95.xls']);
 
-cellLinesArray = exctextarray(9, 10:2:128);
+% go up to 96, then skip 98 because MDA-MC-468 is not in data
+cellLinesArray = convertExpressionFileName(exctextarray(9, [10:2:96 100:2:128]));
 metsArray = exctextarray(10:100, 2);
 FVAVminArray = excnumarray(8:98, 1);
 FVAVmaxArray = excnumarray(8:98, 3);
