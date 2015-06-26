@@ -42,6 +42,7 @@ end
 
 relevantRxns = glucoseRxns(any(~isnan(glucoseRxnFluxesMatrix),1));
 glucoseRxnFluxesMatrix = glucoseRxnFluxesMatrix(:,any(~isnan(glucoseRxnFluxesMatrix),1));
+save('simpleReducedModelScript.mat','relevantRxns','glucoseRxnFluxesMatrix','subSystemsToAdd');
 
 reducedModel = makeReducedModel(origRecon2);
 reducedModel = changeObjective(reducedModel,'BIOMASS',1);
