@@ -1,7 +1,8 @@
 function makeTissueSpecificModels(outputDir, prefix, model, expressionIDsMachado, expressionDataMachado)
 
 expressionMedian = median(mean(expressionDataMachado,2));
-expressionData = expressionDataMachado >= expressionMedian;
+expressionData.Data = expressionDataMachado >= expressionMedian;
+expressionData.Locus = expressionIDsMachado;
             
 if ~exist([outputDir filesep 'specificModel' prefix 'iMAT.mat'],'file')
     [specificModeliMAT, specificRxnsiMAT] = createTissueSpecificModel(model,expressionData,1,1,[],'Shlomi');

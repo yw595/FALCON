@@ -49,4 +49,5 @@ function runFALCONStripped(model, genedata_filename, nReps, outputDir)
     for i=1:length(v_falcon)
     	fprintf(fluxOutputFI,['R_' model.rxns{i} ',' num2str(v_falcon(i)) '\n']);
     end
+    fclose(fluxOutputFI);
 end

@@ -12,7 +12,7 @@ metsArray = exctextarray(10:100, 2);
 FVAVminArray = excnumarray(8:98, 1);
 FVAVmaxArray = excnumarray(8:98, 3);
 
-coreTableTemp = excnumarray(8:98, 8:127);
+coreTableTemp = excnumarray(8:98, [8:95 98:127]);
 
 coreTable = [];
 for i = 1:length(cellLinesArray)

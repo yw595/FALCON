@@ -1,6 +1,13 @@
 load SigurdssonMouse.mat;
 origSigurdssonMouse = mouse1415;
 origSigurdssonMouse.rxnNames = {};
+
+origLeeYeast = readCbModel('LeeYeast.xml');
+
+load Recon2.v03.mat;
+origRecon2 = modelRecon2beta121114_fixed_updatedID;
+origRecon2.description = 'origRecon2';
+
 for i=1:length(origSigurdssonMouse.rxns)
     matchHuman = strcmp( origRecon2.rxns,origSigurdssonMouse.rxns{i} );
     if any(matchHuman)
@@ -10,9 +17,3 @@ for i=1:length(origSigurdssonMouse.rxns)
     end
 end
 origSigurdssonMouse.rxnNames = origSigurdssonMouse.rxnNames;
-
-origLeeYeast = readCbModel('LeeYeast.xml');
-
-load Recon2.v03.mat;
-origRecon2 = modelRecon2beta121114_fixed_updatedID;
-origRecon2.description = 'origRecon2';
