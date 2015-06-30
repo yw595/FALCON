@@ -1,10 +1,10 @@
-load SigurdssonMouse.mat;
+load(['input' filesep 'SigurdssonMouse.mat']);
 origSigurdssonMouse = mouse1415;
 origSigurdssonMouse.rxnNames = {};
 
-origLeeYeast = readCbModel('LeeYeast.xml');
+origLeeYeast = readCbModel(['input' filesep 'LeeYeast.xml']);
 
-load Recon2.v03.mat;
+load(['input' filesep 'inputRecon2.v03.mat']);
 origRecon2 = modelRecon2beta121114_fixed_updatedID;
 origRecon2.description = 'origRecon2';
 

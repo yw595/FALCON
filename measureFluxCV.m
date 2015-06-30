@@ -3,7 +3,6 @@ inputFiles = dir(inputDir);
 
 fluxMatrix = [];
 for i=1:length(inputFiles)
-    %if ~strcmp(inputFiles(i).name, '.') && ~strcmp(inputFiles(i).name, '..') && ~strcmp(inputFiles(i).name, '.git') && ~strcmp(inputFiles(i).name, '.gitignore')
     if ~isempty(regexp(inputFiles(i).name, '.csv.flux$'))
        fluxData = importdata([inputDir filesep inputFiles(i).name]);
        fluxMatrix(:,end+1) = fluxData.data;
