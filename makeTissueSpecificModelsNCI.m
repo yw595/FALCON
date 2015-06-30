@@ -14,13 +14,9 @@ for i=1:length(inputDirs)
         initCobraToolbox;
         cellLinesArray{k}
         totalData = importdata([inputDir filesep cellLinesArray{k} '.csv']);
-        expressionIDsMachado = totalData.data(2:end,1);
-        expressionDataMachado = totalData.data(2:end,2);
-        expressionIDsMachado = expressionIDsMachado(~isnan(expressionDataMachado));
-        expressionDataMachado = expressionDataMachado(~isnan(expressionDataMachado));
+        [expressionIDsMachado, expressionDataMachado, ~] = ...
+        readExpressionFile([inputDir filesep cellLinesArray{k} '.csv']);
         
-        size(expressionDataMachado)
-        size(expressionIDsMachado)
         makeTissueSpecificModels(outputDir, cellLinesArray{k}, origRecon2, ...
             expressionIDsMachado, expressionDataMachado);
     end
