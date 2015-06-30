@@ -7,7 +7,12 @@ coreTableCol = coreTable(:, strcmp(convertExpressionFileName(cellLinesArray), ce
 [sortedCoreTableCol, sortedCoreTableColIdxs] = sort(abs(coreTableCol), 1, 'descend');
 load(cellLineFile);
 sortedCoreTableCol = coreTableCol(sortedCoreTableColIdxs);
-v_Exc = extractExcFlux(model, v_falcon);
+%disp(cellLineFile);
+if regexp(cellLineFile,'fba')
+    v_Exc = extractExcFlux(model, v_fba);
+else
+    v_Exc = extractExcFlux(model, v_falcon);
+end
 sortedV_Exc = v_Exc(sortedCoreTableColIdxs);
 sortedFVAVmaxArray = FVAVmaxArray(sortedCoreTableColIdxs);
 sortedFVAVminArray = FVAVminArray(sortedCoreTableColIdxs);

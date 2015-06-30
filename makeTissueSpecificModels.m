@@ -7,6 +7,8 @@ expressionData.Locus = expressionIDsMachado;
 if ~exist([outputDir filesep 'specificModel' prefix 'iMAT.mat'],'file')
     [specificModeliMAT, specificRxnsiMAT] = createTissueSpecificModel(model,expressionData,1,1,[],'Shlomi');
     [specificModelGIMME, specificRxnsGIMME] = createTissueSpecificModel(model,expressionData,1,1,[],'GIMME');
+    save([outputDir filesep 'specificModel' prefix 'iMAT.mat'],'specificModeliMAT');
+    save([outputDir filesep 'specificModel' prefix 'GIMME.mat'],'specificModelGIMME');
 end
 
 specificFluxesGIMMEMachado = call_GIMME(model, expressionIDsMachado, ...
@@ -16,8 +18,6 @@ specificFluxesiMATMachado = call_iMAT(model, expressionIDsMachado, expressionDat
 specificModeliMATMachado = extractSubNetwork(model,model.rxns(specificFluxesiMATMachado>0));
 specificModelGIMMEMachado = extractSubNetwork(model,model.rxns(specificFluxesGIMMEMachado>0));
 
-save([outputDir filesep 'specificModel' prefix 'iMAT.mat'],'specificModeliMAT');
-save([outputDir filesep 'specificModel' prefix 'GIMME.mat'],'specificModelGIMME');
 save([outputDir filesep 'specificModel' prefix 'iMATMachado.mat'],'specificModeliMATMachado');
 save([outputDir filesep 'specificModel' prefix 'GIMMEMachado.mat'],'specificModelGIMMEMachado');
 
