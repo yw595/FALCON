@@ -24,11 +24,16 @@ sortedCoreTableCol = coreTableCol(sortedCoreTableColIdxs);
 % select right name, then extract predicted CORE exchange flux in v_Exc
 % sort v_Exc, as well as FVAMin and Max for Supp Table 3
 load(cellLineFile);
+if exist('v_fba','var') && length(v_fba)==0
+    statsArray = NaN( length(sortedCoreTableCol)+3,13 ); return;
+end
 if regexp(cellLineFile,'fba')
     v_Exc = extractExcFlux(model, v_fba);
 elseif regexp(cellLineFile,'gxfba')
     v_Exc = extractExcFlux(model, v_fba);
 elseif regexp(cellLineFile,'eflux')
+    v_Exc = extractExcFlux(model, v_fba);
+elseif regexp(cellLineFile,'relatch')
     v_Exc = extractExcFlux(model, v_fba);
 else
     v_Exc = extractExcFlux(model, v_falcon);
