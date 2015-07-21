@@ -20,6 +20,9 @@ for i=1:length(inputPrefixes)
     elseif strcmp(inputPrefixes{i},'GXFBA')
         fileExts = {'.csv_gxfba_flux.mat'};
 	fileOutputExts = {'GXFBA'};
+    elseif strcmp(inputPrefixes{i},'RELATCH')
+        fileExts = {'.csv_relatch_flux.mat'};
+	fileOutputExts = {'RELATCH'};
     else
         fileExts = {'.csv_falcon_flux.mat','.csv_fba_flux.mat'};
 	fileOutputExts = {'FALCON','FBA'};
@@ -28,14 +31,14 @@ for i=1:length(inputPrefixes)
     for k=1:length(fileExts)
         allThoroughStats = [];
         analyzedCellLines = {};
-        parfor j=1:length(cellLinesArray)
+        parfor j=1:2%length(cellLinesArray)
 	    % skip two cell lines where GIMME and iMAT failed to make models
             if ~strcmp(cellLinesArray{j},'MCF7') && ~strcmp(cellLinesArray{j},'K562')
 	        disp(cellLinesArray{j})
                 analyzedCellLines{j} = cellLinesArray{j};
 
 		% load either origRecon2, or a specific model using helper function, depending on inputPrefix
-                if strcmp(inputPrefixes{i},'Normal') || strcmp(inputPrefixes{i},'EFlux') || strcmp(inputPrefixes{i},'GXFBA')
+                if strcmp(inputPrefixes{i},'Normal') || strcmp(inputPrefixes{i},'EFlux') || strcmp(inputPrefixes{i},'GXFBA') || strcmp(inputPrefixes{i},'RELATCH')
                     modelToRun = origRecon2;
                 else
                     modelToRun = analyzeFluxScriptHelper(cellLinesArray{j}, inputPrefixes{i});

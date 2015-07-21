@@ -6,7 +6,7 @@
 inputDirs = {['NCI60Sims' filesep 'nci60prot']};%, ...
 %    ['NCI60Sims' filesep 'nci60prot'],['NCI60Sims' filesep 'nci60prot_mRNA']};
 % we will output to folders of the form NCI60Sims/nci60prot/output(outputPrefixes{i})
-outputPrefixes = {'GXFBA'};%{'Normal', 'iMAT', 'GIMME', ...
+outputPrefixes = {'RELATCH'};%{'Normal', 'iMAT', 'GIMME', ...
 %    'iMATMachado', 'GIMMEMachado','EFlux','GXFBA'};
 [cellLinesArray, ~, ~, ~, ~, ] = readJainTable();
 [originTissuesArray INITFilesArray mCADREFilesArray] = makeOriginTissuesArray(cellLinesArray);
@@ -21,38 +21,54 @@ for i=1:length(inputDirs)
             system(['mkdir ' outputDir]);
         end
         
-        parfor k=1:length(cellLinesArray)
+        for k=1:length(cellLinesArray)
 	    % skip two cell lines where GIMME and iMAT failed to make models
             if ~strcmp(cellLinesArray{k},'MCF7') && ~strcmp(cellLinesArray{k},'K562')
 
 	        % in what follows, run initCobraToolbox at beginning of each iteraction,
 	        % otherwise parfor throws an error involving global variables I don't completely understand yet
-                if strcmp(outputPrefixes{j},'EFlux')
-                    initCobraToolbox;
-                    [expressionIDsMachado, expressionDataMachado, ~] = ...
+	        initCobraToolbox;
+		% read in common expressiondata and ids for everything except final else clause
+		[expressionIDsMachado, expressionDataMachado, ~] = ...
                     readExpressionFile([inputDir filesep cellLinesArray{k} '.csv']);
+		%reference FBA soln for everything except final else clause
+		FBAModel = changeObjective(origRecon2,'biomass_reaction');
+                FBASoln = optimizeCbModel(constrainMediumExc(initializeRecon2(FBAModel)),1);
+                v_fba = FBASoln.x;
+	        if strcmp(outputPrefixes{j},'RELATCH')
+		    tempIDs = {};
+		    for z =1:length(expressionIDsMachado)
+		        tempIDs{z} = num2str(expressionIDsMachado(z));
+		    end
+                    RELATCHFluxes = call_RELATCH(constrainMediumExc(initializeRecon2(origRecon2)), ...
+                    tempIDs, expressionDataMachado, {}, []);
+		    nci60ScriptHelper2([outputDir filesep cellLinesArray{k} '.csv' '_relatch_flux.mat'], [outputDir filesep cellLinesArray{k} '.csv' '.relatch.flux'], RELATCHFluxes, origRecon2);
+		elseif strcmp(outputPrefixes{j},'MADE')
+		    [expressionIDsMachadoRef, expressionDataMachadoRef, ~] = ...
+                    readExpressionFile([inputDir filesep cellLinesArray{1} '.csv']);
+		    [intersectIDs, intersectIdxsA, intersectIdxsB] = intersect(expressionIDsMachado, expressionIDsMachadoRef);
+		    intersectDataA = expressionDataMachado(intersectIdxsA);
+		    intersectDataB = expressionDataMachadoRef(intersectIdxsB);
+		    bounds_ref = struct();
+		    bounds_ref.lb = origRecon2.lb;
+		    bounds_ref.ub = origRecon2.ub;
+		    MADEFluxes = call_MADE(constrainMediumExc(initializeRecon2(origRecon2)), ...
+		    num2str(intersectIDs), intersectDataA, intersectDataB, 0.9, bounds_ref);
+                elseif strcmp(outputPrefixes{j},'EFlux')
                     EFluxes = call_EFlux(constrainMediumExc(initializeRecon2(origRecon2)), ...
                     expressionIDsMachado, expressionDataMachado, 'EX_glc(e)',1);
 		    nci60ScriptHelper2([outputDir filesep cellLinesArray{k} '.csv' '_eflux_flux.mat'], [outputDir filesep cellLinesArray{k} '.csv' '.eflux.flux'], EFluxes, origRecon2);
                 elseif strcmp(outputPrefixes{j},'GXFBA')
-                    initCobraToolbox;
-                    [expressionIDsMachado, expressionDataMachado, ~] = ...
-                    readExpressionFile([inputDir filesep cellLinesArray{k} '.csv']);
                     [expressionIDsMachadoRef, expressionDataMachadoRef, ~] = ...
                     readExpressionFile([inputDir filesep cellLinesArray{1} '.csv']);
 		    [intersectIDs, intersectIdxsA, intersectIdxsB] = intersect(expressionIDsMachado, expressionIDsMachadoRef);
 		    intersectDataA = expressionDataMachado(intersectIdxsA);
 		    intersectDataB = expressionDataMachadoRef(intersectIdxsB);
 
-                    FBAModel = changeObjective(origRecon2,'biomass_reaction');
-                    FBASoln = optimizeCbModel(constrainMediumExc(initializeRecon2(FBAModel)),1);
-                    v_fba = FBASoln.x;
-
                     GXFBAFluxes = call_GXFBA(constrainMediumExc(initializeRecon2(origRecon2)), ...
                     num2str(intersectIDs), intersectDataA, intersectDataB, GXFBA);
 		    nci60ScriptHelper2([outputDir filesep cellLinesArray{k} '.csv' '_gxfba_flux.mat'], [outputDir filesep cellLinesArray{k} '.csv' '.gxfba.flux'], GXFBAFluxes, origRecon2);
                 else
-                    initCobraToolbox;
 
 		    % load appropriate model depending on inputPrefix
                     modelToRun = nci60ScriptHelper(origRecon2, outputPrefixes{j}, ...
