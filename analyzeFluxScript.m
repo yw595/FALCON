@@ -3,8 +3,10 @@
 % averages these across all cell lines in an algorithm, and outputs them in a set of .mat files
 
 % we will look at folders of the form NCI60Sims/nci60prot/output(inputPrefixes{i})
-inputPrefixes = {'EFlux','GXFBA'};%{'Normal', 'iMAT','GIMME','iMATMachado','GIMMEMachado','EFlux','GXFBA'};
-[cellLinesArray, ~, ~, ~, ~, ] = readJainTable();
+inputPrefixes = {'Normal', 'iMAT','GIMME','iMATMachado','GIMMEMachado','EFlux','GXFBA'};
+[cellLinesArray, jainMetsArray, coreTable, FVAVminArray, FVAVmaxArray] = readJainTable();
+numValid = zeros(length(jainMetsArray),1); numCorrect = zeros(length(jainMetsArray),1);
+[~, sortIdxs] = sort(mean(abs(coreTable),2));
 for i=1:length(inputPrefixes)
     inputDir = ['NCI60Sims/nci60prot/output' inputPrefixes{i}];
     inputFiles = dir(inputDir);
@@ -41,8 +43,10 @@ for i=1:length(inputPrefixes)
 
 		% run analyzeFlux, save the fourth row from the end of statsArray,
 		% which contains results when looking at all CORE fluxes
-                statsArray = analyzeFlux([inputDir filesep cellLinesArray{j} fileExts{k}], ...
+                [statsArray correctlyPredictedMets] = analyzeFlux([inputDir filesep cellLinesArray{j} fileExts{k}], ...
                 cellLinesArray{j},modelToRun);
+                numValid = numValid+(correctlyPredictedMets>=0);
+                numCorrect = numCorrect+(correctlyPredictedMets==1);
                 allThoroughStats(j,:) = statsArray(end-3,:);
             end
         end
@@ -51,7 +55,10 @@ for i=1:length(inputPrefixes)
 	% save this average, and individual stats for each cell line, 
 	%in .mat file, one for each algorithm we look at
         allThoroughStats(end+1,:) = mean(allThoroughStats,1);
+        averageCorrectPercent = numValid./numCorrect;
+        sortedJainMetsArray = jainMetsArray(sortIdxs);
+        sortedAverageCorrectPercent = averageCorrectPercent(sortIdxs);
         save(['analyzeFluxScript' inputPrefixes{i} fileOutputExts{k} '.mat'], ...
-        'allThoroughStats','analyzedCellLines');
+        'allThoroughStats','analyzedCellLines','sortedAverageCorrectPercent','sortedJainMetsArray');
     end
 end

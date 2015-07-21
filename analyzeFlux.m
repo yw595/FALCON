@@ -1,4 +1,4 @@
-function statsArray = analyzeFlux(cellLineFile, cellLine, model)
+function [statsArray correctlyPredictedMets] = analyzeFlux(cellLineFile, cellLine, model)
 % 
 % INPUTS
 %       cellLineFile - name of .mat file that contains predicted fluxes from a constraint-based method
@@ -47,6 +47,7 @@ sortedFVAVminArray = FVAVminArray(sortedCoreTableColIdxs);
 % each column of statsArray contains one of 13 different statistics
 % measuring divergence btw experimental and predicted CORE flux
 statsArray = zeros( length(sortedCoreTableCol)+3,13 );
+correctPredictedMets = ones(length(sortedCoreTableCol),1)*(-2);
 for i = 1:length(sortedCoreTableCol)
     uptakeTruePos=0;
     uptakeFalseNeg=0;
@@ -62,25 +63,31 @@ for i = 1:length(sortedCoreTableCol)
 	    % similarly for uptake
             if sortedFVAVmaxArray(j) == 0
                 statsArray(i,1) = statsArray(i,1)+1; %cannot match this CORE release based on FVA results
+                correctlyPredictedMets(sortedCoreTableColIdxs(i)) = -1;
             else
                 statsArray(i,2) = statsArray(i,2)+1; % can match this CORE release
                 includedIdxs(end+1) = j;
                 if(sortedV_Exc(j) > 0)
                     releaseTruePos = releaseTruePos + 1;
+                    correctlyPredictedMets(sortedCoreTableColIdxs(i)) = 1;
                 else
                     releaseFalseNeg = releaseFalseNeg + 1;
+                    correctlyPredictedMets(sortedCoreTableColIdxs(i)) = 0;
                 end
             end
         elseif sortedCoreTableCol(j) < 0
             if sortedFVAVminArray(j) == 0
                 statsArray(i,3) = statsArray(i,3)+1; %cannot match this CORE uptake based on FVA results
+                correctlyPredictedMets(sortedCoreTableColIdxs(i)) = -1;
             else
                 statsArray(i,4) = statsArray(i,4)+1; %can match this CORE uptake
                 includedIdxs(end+1) = j;
                 if(sortedV_Exc(j) < 0)
                     uptakeTruePos = uptakeTruePos + 1;
+                    correctlyPredictedMets(sortedCoreTableColIdxs(i)) = 1;
                 else
                     uptakeFalseNeg = uptakeFalseNeg + 1;
+                    correctlyPredictedMets(sortedCoreTableColIdxs(i)) = 0;
                 end
             end
         else
