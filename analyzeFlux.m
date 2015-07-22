@@ -52,7 +52,7 @@ sortedFVAVminArray = FVAVminArray(sortedCoreTableColIdxs);
 % each column of statsArray contains one of 13 different statistics
 % measuring divergence btw experimental and predicted CORE flux
 statsArray = zeros( length(sortedCoreTableCol)+3,13 );
-correctPredictedMets = ones(length(sortedCoreTableCol),1)*(-2);
+correctlyPredictedMets = -2*ones(length(sortedCoreTableCol),1);
 for i = 1:length(sortedCoreTableCol)
     uptakeTruePos=0;
     uptakeFalseNeg=0;
@@ -74,10 +74,10 @@ for i = 1:length(sortedCoreTableCol)
                 includedIdxs(end+1) = j;
                 if(sortedV_Exc(j) > 0)
                     releaseTruePos = releaseTruePos + 1;
-                    correctlyPredictedMets(sortedCoreTableColIdxs(i)) = 1;
+                    correctlyPredictedMets(sortedCoreTableColIdxs(j)) = 1;
                 else
                     releaseFalseNeg = releaseFalseNeg + 1;
-                    correctlyPredictedMets(sortedCoreTableColIdxs(i)) = 0;
+                    correctlyPredictedMets(sortedCoreTableColIdxs(j)) = 0;
                 end
             end
         elseif sortedCoreTableCol(j) < 0
@@ -89,10 +89,10 @@ for i = 1:length(sortedCoreTableCol)
                 includedIdxs(end+1) = j;
                 if(sortedV_Exc(j) < 0)
                     uptakeTruePos = uptakeTruePos + 1;
-                    correctlyPredictedMets(sortedCoreTableColIdxs(i)) = 1;
+                    correctlyPredictedMets(sortedCoreTableColIdxs(j)) = 1;
                 else
                     uptakeFalseNeg = uptakeFalseNeg + 1;
-                    correctlyPredictedMets(sortedCoreTableColIdxs(i)) = 0;
+                    correctlyPredictedMets(sortedCoreTableColIdxs(j)) = 0;
                 end
             end
         else
@@ -124,6 +124,18 @@ for i = 1:length(sortedCoreTableCol)
         statsArray(i,13) = releaseTruePos / ...
             (releaseTruePos + releaseFalseNeg); %release sensitivity
     end
+    %uptakeTruePos
+    %uptakeFalseNeg
+    %releaseTruePos
+    %releaseFalseNeg
+%i
+%uptakeTruePos
+%uptakeFalseNeg
+%releaseTruePos
+%releaseFalseNeg
+%correctlyPredictedMets
+%sum(correctlyPredictedMets>=0)
+%sum(correctlyPredictedMets==1)
 end
 
 summaryHandles = {@min, @max, @mean};

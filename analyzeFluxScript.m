@@ -5,7 +5,6 @@
 % we will look at folders of the form NCI60Sims/nci60prot/output(inputPrefixes{i})
 inputPrefixes = {'Normal', 'iMAT','GIMME','iMATMachado','GIMMEMachado','EFlux','GXFBA'};
 [cellLinesArray, jainMetsArray, coreTable, FVAVminArray, FVAVmaxArray] = readJainTable();
-numValid = zeros(length(jainMetsArray),1); numCorrect = zeros(length(jainMetsArray),1);
 [~, sortIdxs] = sort(mean(abs(coreTable),2));
 for i=1:length(inputPrefixes)
     inputDir = ['NCI60Sims/nci60prot/output' inputPrefixes{i}];
@@ -31,7 +30,8 @@ for i=1:length(inputPrefixes)
     for k=1:length(fileExts)
         allThoroughStats = [];
         analyzedCellLines = {};
-        parfor j=1:2%length(cellLinesArray)
+	numValid = zeros(length(jainMetsArray),1); numCorrect = zeros(length(jainMetsArray),1);
+        parfor j=1:length(cellLinesArray)
 	    % skip two cell lines where GIMME and iMAT failed to make models
             if ~strcmp(cellLinesArray{j},'MCF7') && ~strcmp(cellLinesArray{j},'K562')
 	        disp(cellLinesArray{j})
@@ -58,7 +58,10 @@ for i=1:length(inputPrefixes)
 	% save this average, and individual stats for each cell line, 
 	%in .mat file, one for each algorithm we look at
         allThoroughStats(end+1,:) = mean(allThoroughStats,1);
-        averageCorrectPercent = numValid./numCorrect;
+	%numValid(numValid==0)=1;
+        averageCorrectPercent = numCorrect./numValid;
+	%allThoroughStats(end,11:13)
+	%mean(averageCorrectPercent(~isnan(averageCorrectPercent)))
         sortedJainMetsArray = jainMetsArray(sortIdxs);
         sortedAverageCorrectPercent = averageCorrectPercent(sortIdxs);
         save(['analyzeFluxScript' inputPrefixes{i} fileOutputExts{k} '.mat'], ...
