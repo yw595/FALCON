@@ -6,7 +6,7 @@
 inputDirs = {['NCI60Sims' filesep 'nci60prot']};%, ...
 %    ['NCI60Sims' filesep 'nci60prot'],['NCI60Sims' filesep 'nci60prot_mRNA']};
 % we will output to folders of the form NCI60Sims/nci60prot/output(outputPrefixes{i})
-outputPrefixes = {'RELATCH'};%{'Normal', 'iMAT', 'GIMME', ...
+outputPrefixes = {'mCADRE'};%{'Normal', 'iMAT', 'GIMME', ...
 %    'iMATMachado', 'GIMMEMachado','EFlux','GXFBA'};
 [cellLinesArray, ~, ~, ~, ~, ] = readJainTable();
 [originTissuesArray INITFilesArray mCADREFilesArray] = makeOriginTissuesArray(cellLinesArray);
@@ -21,7 +21,7 @@ for i=1:length(inputDirs)
             system(['mkdir ' outputDir]);
         end
         
-        for k=1:length(cellLinesArray)
+        for k=1:2%length(cellLinesArray)
 	    % skip two cell lines where GIMME and iMAT failed to make models
             if ~strcmp(cellLinesArray{k},'MCF7') && ~strcmp(cellLinesArray{k},'K562')
 
@@ -53,7 +53,7 @@ for i=1:length(inputDirs)
 		    bounds_ref.lb = origRecon2.lb;
 		    bounds_ref.ub = origRecon2.ub;
 		    MADEFluxes = call_MADE(constrainMediumExc(initializeRecon2(origRecon2)), ...
-		    num2str(intersectIDs), intersectDataA, intersectDataB, 0.9, bounds_ref);
+		    num2str(intersectIDs), intersectDataA, intersectDataB, 0.9, [], bounds_ref);
                 elseif strcmp(outputPrefixes{j},'EFlux')
                     EFluxes = call_EFlux(constrainMediumExc(initializeRecon2(origRecon2)), ...
                     expressionIDsMachado, expressionDataMachado, 'EX_glc(e)',1);
@@ -73,6 +73,10 @@ for i=1:length(inputDirs)
 		    % load appropriate model depending on inputPrefix
                     modelToRun = nci60ScriptHelper(origRecon2, outputPrefixes{j}, ...
                     inputDir, cellLinesArray{k}, INITFilesArray{k}, mCADREFilesArray{k});
+		    
+		    if isempty(modelToRun)
+		        continue;
+		    end
                     
 		    % run FALCON
                     runFALCONStripped(constrainMediumExc(initializeRecon2(modelToRun)), ...
@@ -86,7 +90,7 @@ for i=1:length(inputDirs)
                     v_fba = FBASoln.x;
                     
 		    % save .mat and .csv.flux files for fba using helper function
-                    nci60ScriptHelper2([outputDir filesep cellLinesArray{k} '.csv' '_fba_flux.mat'], [outputDir filesep cellLinesArray{k} '.csv' '.fba.flux'], v_fba);
+                    nci60ScriptHelper2([outputDir filesep cellLinesArray{k} '.csv' '_fba_flux.mat'], [outputDir filesep cellLinesArray{k} '.csv' '.fba.flux'], v_fba, modelToRun);
                 end
             end
         end

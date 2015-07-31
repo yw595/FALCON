@@ -22,12 +22,19 @@ function modelToRun = nci60ScriptHelper(origRecon2, outputPrefix, inputDir, cell
 	if ~strcmp(mCADREFile,'na')
 	    load(['DownloadedTissueSpecific' filesep 'mCADREFiles' filesep mCADREFile '.mat']);
 	    eval(['modelToRun = ' mCADREFile ';']);
+	    %disp('HERE')
+	    %modelToRun
+	else
+	    modelToRun = [];
 	end
     end
+    mCADREFile
 
+    if 0
     if strcmp(outputPrefix, 'INIT') || strcmp(outputPrefix,'mCADRE')
         [~, intersectMetIdxsA, intersectMetIdxsB] = union(origRecon2.metFormulas,modelToRun.metFormulas);
 	modelToRun.mets{intersectMetIdxsA} = num2str(origRecon2.mets{intersectMetIdxsB});
 	modelToRun.metNames{intersectMetIdxsA} = num2str(origRecon2.metNames{intersectMetIdxsB});
+    end
     end
 end
