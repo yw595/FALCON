@@ -23,6 +23,7 @@ if (~exist('description','var'))
   description='';
 end
 
+% at bottom of block, curatedRxnNames adds together all
 simpleGlycolysisRxnNames={'HEX1','PGI','PFK','FBA','TPI','GAPD','PGK','PGM','ENO','PYK','LDH_L'};
 simplePentosePhosphateRxnNames={'G6PDH2r','PGL','GND','RPI','RPE','TALA','TKT1','TKT2','PRPPS'};
 simpleCitricAcidCycleRxnNames={'PDHm','CSm','ACONTm','ICDHxm','AKGDm','SUCOASm','SUCD1m','FUMm','MDHm'};
@@ -37,6 +38,7 @@ simpleFolateMetabolismRxnNames={'DHFR','FTHFDH','MTHFC','MTHFD'};
 simpleMiscRxnNames={'TRDR'};
 curatedRxnNames=[simpleGlycolysisRxnNames';simplePentosePhosphateRxnNames';simpleCitricAcidCycleRxnNames';simpleOxidativePhosphorylationRxnNames';simplePurineSynthesisRxnNames';simpleTransportMitoRxnNames';simpledGTPSynthesisRxnNames';simpledATPSynthesisRxnNames';simpledCTPSynthesisRxnNames';simpledTTPSynthesisRxnNames';simpleFolateMetabolismRxnNames';simpleMiscRxnNames'];
 
+% assume toAddRxnNames is cell array of cell arrays, add rxnName if not in curatedRxnNames
 for i=1:length(toAddRxnNames)
   toAddRxnNamesSet=toAddRxnNames{i};
   for j=1:length(toAddRxnNamesSet)
@@ -46,6 +48,7 @@ for i=1:length(toAddRxnNames)
   end
 end
 
+% subselect rxns, mets and S
 selRxns = ismember(model.rxns,curatedRxnNames);
 subS = model.S(:,selRxns);
 if (nargin < 8)
@@ -59,6 +62,9 @@ subS = subS(selMets,:);
 subModel.S = subS;
 subModel.rxns = model.rxns(selRxns);
 subModel.mets = model.mets(selMets);
+
+% subselect b, metNames, Formulas, rev, lb, ub, c, genes (selGenes are any associated with selRxns),
+% geneNames, rxnNames, subSystems
 if (isfield(model,'b'))
     subModel.b = model.b(selMets);
 end
@@ -105,12 +111,18 @@ if isfield(model,'reversibleModel')
     subModel.reversibleModel=model.reversibleModel;
 end
 
+% add NOTE: FUNCTIONAL EXCHANGE RXNS, EVEN IF TF_ NAME 
+% Rxns for transportMets, NOTE: DOES INCLUDE GLC_D[C] ALSO,
+% IN EARLY CASES WHERE NO OTHER GLUCOSE YET ADDED, DOESN'T SHOW
+% UP IN SIMPLEREDUCEDMODELSCRIPT FIGURE
+% add biomass drain for demandMets, drain rxns for demandMets2
 reducedModel=subModel;
 transportMets={'o2[c]','h2o[c]','h[c]','pi[c]','glc_D[c]','lac_L[c]','co2[c]','gln_L[c]','glu_L[c]','gly[c]','asp_L[c]','arg_L[c]','asn_L[c]','cys_L[c]','his_L[c]','4hpro_LT[c]','ile_L[c]','leu_L[c]','lys_L[c]','met_L[c]','phe_L[c]','pro_L[c]','ser_L[c]','thr_L[c]','trp_L[c]','tyr_L[c]','val_L[c]','btn[c]','chol[c]','pnto_R[c]','fol[c]','ncam[c]','bz[c]','pydxn[c]','ribflv[c]','thm[c]','adpcbl[c]','inost[c]','ca2[c]','so4[c]','k[e]','cl[c]','na1[c]','gthrd[c]','nad[c]','nadh[c]','fum[c]','o2s[c]','hco3[c]','q10[m]','q10h2[m]','nh4[c]','gtp[c]','gdp[c]'};
 demandMets={'dctp[c]','dttp[c]','dgtp[c]','datp[c]'};
 demandMets2={'gln_L[c]','glu_L[c]','gly[c]','asp_L[c]','arg_L[c]','asn_L[c]','cys_L[c]','his_L[c]','4hpro_LT[c]','ile_L[c]','leu_L[c]','lys_L[c]','met_L[c]','phe_L[c]','pro_L[c]','ser_L[c]','thr_L[c]','trp_L[c]','tyr_L[c]','val_L[c]'};
 transportRxns={}; 
 
+% fix four reactions that have weird bounds in origRecon2, NOTE: ALSO PYK LOWER LIM SET TO 1
 for i=1:length(reducedModel.rxns)
     if(strcmp(reducedModel.rxns{i},'PYK'))
         reducedModel.lb(i)=1;
