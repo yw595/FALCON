@@ -70,6 +70,8 @@ while ~isempty(subSystemsToTest) || ~isempty(subSystemsToTest2)
     [~, consumingIdxs, ~] = intersect(consumingGlucoseRxns, glucoseRxns);
     glucoseConsumingArray(end+1) = sum(glucoseRxnFluxes(consumingIdxs));
     [~, producingIdxs, ~] = intersect(producingGlucoseRxns, glucoseRxns);
+    % only need check for producing, exchange always has TR_glc_D[c],
+    % consuming HEX1
     if ~isempty(glucoseRxnFluxes(producingIdxs))
         glucoseProducingArray(end+1) = sum(glucoseRxnFluxes(producingIdxs));
     else
