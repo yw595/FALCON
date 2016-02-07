@@ -31,7 +31,8 @@ v_all = [];
 
 timeInit = num2str(now());
 
-parfor i = 1:nReps
+for i = 1:nReps
+    disp(nReps)
     [v_sol, corrval, nvar, ~, fTime, fIter] = ...
         falcon(m, varargin{1:end-2});
     v_sol_Dist(i, :)  = columnVector(v_sol)';
@@ -53,11 +54,11 @@ fTime_s   = std(fTime_Dist);
 fIter_s   = std(fIter_Dist);
 
 genedata_filename = varargin{end};
-fileNameOut = ['falcon_' genedata_filename '_' num2str(nReps) '_' timeInit '.mat'];
-outputDir = varargin{end-1};
-fileNameOut = [outputDir filesep fileNameOut];
-save(fileNameOut, 'v_sol', 'v_sol_s', 'v_sol_Dist', ...
-    'corrval', 'corrval_s', 'corrval_Dist',         ...
-    'nvar', 'nvar_s', 'nvar_Dist',                  ...
-    'fTime', 'fTime_s', 'fTime_Dist',               ...
-    'fIter', 'fIter_s', 'fIter_Dist');
+%fileNameOut = ['falcon_' genedata_filename '_' num2str(nReps) '_' timeInit '.mat'];
+%outputDir = varargin{end-1};
+%fileNameOut = [outputDir filesep fileNameOut];
+%save(fileNameOut, 'v_sol', 'v_sol_s', 'v_sol_Dist', ...
+%    'corrval', 'corrval_s', 'corrval_Dist',         ...
+%    'nvar', 'nvar_s', 'nvar_Dist',                  ...
+%    'fTime', 'fTime_s', 'fTime_Dist',               ...
+%    'fIter', 'fIter_s', 'fIter_Dist');
