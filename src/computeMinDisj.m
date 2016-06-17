@@ -55,7 +55,9 @@ if sigma > 0
     genedata_filename = genedata_filename_pert;
 end
 
+disp('minDisj HERE')
 [status, cmdout] = system(['minDisj ', genedata_filename, ' ', rfname, ' > ', rfout]);
+disp('minDisj THERE')
 if status ~= 0
     pause(0.03); %why (or) is this necessary?
     disp('try #2...');
@@ -100,7 +102,11 @@ while cidx < nrxns
     end
 end
 
-rxnData = importdata(rfout);
+%rxnData = importdata(rfout);
+tempFI = fopen(rfout);
+rxnScan = textscan(tempFI,'%s%s','Delimiter','\t','HeaderLines',0);
+fclose(tempFI);
+rxnData = [cellfun(@(x) str2num(x), rxnScan{1}) cellfun(@(x) str2num(x), rxnScan{2})];
 if FDEBUG == 0
     delete(rfout)
 end

@@ -1,5 +1,5 @@
 if isunix
-    FALCONDir = '/home/ubuntu/MATLAB/FALCON';
+    FALCONDir = '/home/fs01/yw595/MATLAB/FALCON';
 else
     FAlconDir = 'C:\Users\Yiping Wang\Documents\MATLAB\FALCON';
 end

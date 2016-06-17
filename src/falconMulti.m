@@ -1,5 +1,5 @@
 function [v_sol, corrval, nvar, v_all, fTime, fIter, ...
-    v_sol_s, corrval_s, nvar_s, fTime_s, fIter_s]  =  ...
+    v_sol_s, corrval_s, nvar_s, fTime_s, fIter_s, fOpt]  =  ...
     falconMulti(m, nReps, varargin)
 
 % Brandon Barker 2014
@@ -33,8 +33,10 @@ timeInit = num2str(now());
 
 for i = 1:nReps
     disp(nReps)
-    [v_sol, corrval, nvar, ~, fTime, fIter] = ...
-        falcon(m, varargin{1:end-2});
+    [v_sol, corrval, nvar, ~, fTime, fIter, fOpt] = ...
+        falcon(m, varargin{1:end});
+    disp('falconMulti fOpt')
+    disp(fOpt)
     v_sol_Dist(i, :)  = columnVector(v_sol)';
     corrval_Dist(i)   = corrval;
     fTime_Dist(i)     = fTime;

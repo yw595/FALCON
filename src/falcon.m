@@ -1,4 +1,4 @@
-function [v_sol, corrval, nvar, v_all, fTime, fIter] = falcon(m, varargin)
+function [v_sol, corrval, nvar, v_all, fTime, fIter, fOpt] = falcon(m, varargin)
 
 % Brandon Barker 2013 - 2014 Based on Kieran Smallbone's script from:
 %                            http://www.biomedcentral.com/1752-0509/6/73
@@ -230,6 +230,8 @@ fUpdate = 0;
 rGrpsUsed = 0;
 flux_sum_pri = flux_sum;
 v_pri = [];
+disp('FDEBUG')
+disp(FDEBUG)
 while sum(~boundsRev) > nR_old
     fIter = fIter + 1;
     nR_old = sum(~boundsRev); 
@@ -444,8 +446,11 @@ if ~dimFail
         if FDEBUG
             disp(['Not Reversible: ' num2str(sum(~boundsRev))]);
         end
+        %disp('f')
+        %disp(f)
         [v, fOpt, conv, vbasN, cbasN] = easyLP(f, N, b, L, U,     ...
                                                csense, vbasN, cbasN);
+        disp(v)
     end
 
     % This seems to do more poorly because of how the score can be defined
@@ -639,7 +644,8 @@ if exist('gurobi', 'file') == 3
         struct('A', a, 'b', b, 'c', f, 'lb', vlb, 'ub', vub, ...
         'osense',-1,'csense',csense) , ...
         'GurobiParams',params);
-        %'printLevel',1);
+    %'printLevel',1);
+    
 else
     solution = solveCobraLP(...
         struct('A', a, 'b', b, 'c', f, 'lb', vlb, 'ub', vub, ...
@@ -649,6 +655,8 @@ if FDEBUG
     toc(t_easy)
 end
 
+solution
+solution.obj
 % define outputs
 conv = solution.stat == 1;
 svbas = []; %svbas = solution.basis;
@@ -658,6 +666,11 @@ if conv
     v0 = solution.full;
     v(j1) = v0;
     fOpt = f0' * v;
+    if (f'*v0 ~= 0)
+        %disp(f)
+        %disp(v0)
+        disp(f'*v0)
+    end
     if FDEBUG
         disp(['Convergent optimum is: ' num2str(solution.obj)]);
         if isnan(fOpt)
