@@ -1,6 +1,9 @@
-function overlapSub = getMostCommSub(reducedModel,largeModel)
+function overlapSub = getMostCommSub(reducedModel,largeModel,skipSubsystem)
 
 uniqSubsystems = unique(largeModel.subSystems);
+if exist('skipSubsystem','var')
+    uniqSubsystems(strcmp(uniqSubsystems,skipSubsystem)) = [];
+end
 uniqSubsystemsTemp = {};
 lengthIntArr = [];
 for i=1:length(uniqSubsystems)

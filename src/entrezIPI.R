@@ -1,0 +1,8 @@
+listMarts(host='may2009.archive.ensembl.org')
+ensembl54=useMart(host='may2009.archive.ensembl.org',biomart='ENSEMBL_MART_ENSEMBL',dataset='hsapiens_gene_ensembl')
+testipiall = getBM(attributes=c("refseq_peptide","ipi"),values="*"mart=ensembl54)
+testentrezall = getBM(attributes=c("refseq_peptide","entrezgene"),values="*",,mart=ensembl54)
+testipi = getBM(attributes=c("refseq_peptide","ipi"),values=list(TRUE,TRUE),filters=c("with_refseq_peptide","with_ipi"),mart=ensembl54)
+testentrez = getBM(attributes=c("refseq_peptide","entrezgene"),values=list(TRUE,TRUE),filters=c("with_refseq_peptide","with_ipi"),mart=ensembl54)
+write.table(x=testipi,file="/home/fs01/yw595/MATLAB/FALCON/proteomictransfer/REFSEQ_to_IPI.txt",quote=FALSE,sep="\t",row.names=FALSE,col.names=FALSE)
+write.table(x=testentrez,file="/home/fs01/yw595/MATLAB/FALCON/proteomictransfer/REFSEQ_to_Entrez.txt",quote=FALSE,sep="\t",row.names=FALSE,col.names=FALSE)

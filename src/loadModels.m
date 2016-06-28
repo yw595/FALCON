@@ -12,16 +12,25 @@ origLeeYeast = readCbModel([FALCONDir filesep 'input' filesep 'LeeYeast.xml']);
 load([FALCONDir filesep 'input' filesep 'Recon2.v03.mat']);
 origRecon2 = modelRecon2beta121114_fixed_updatedID;
 origRecon2.description = 'origRecon2';
+fuckingStupid = 1;
 for i=1:length(origRecon2.genes)
     if ~isempty(regexp(origRecon2.genes{i},'\.'))
-        %x = origRecon2.genes{i};
-        origRecon2.genes{i} = strrep(origRecon2.genes{i},'.','');%x(1:regexp(x,'\.')-1);
+        if fuckingStupid
+            x = origRecon2.genes{i};
+            origRecon2.genes{i} = x(1:regexp(x,'\.')-1);
+        else
+            origRecon2.genes{i} = strrep(origRecon2.genes{i},'.','');
+        end
     end
 end
 for i=1:length(origRecon2.grRules)
     if ~isempty(regexp(origRecon2.grRules{i},'\.'))
-        %x = origRecon2.genes{i};
-        origRecon2.grRules{i} = strrep(origRecon2.grRules{i},'.','');%x(1:regexp(x,'\.')-1);
+        if fuckingStupid
+            x = origRecon2.grRules{i};
+            origRecon2.grRules{i} = x(1:regexp(x,'\.')-1);
+        else
+            origRecon2.grRules{i} = strrep(origRecon2.grRules{i},'.','');
+        end
     end
 end
 
