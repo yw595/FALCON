@@ -19,22 +19,23 @@ end
 
 if strcmp(type,'biomass')
     reducedModel.c(end+1)=1;
-    added=0;
+    %added=0;
+    reducedModel.S(1,end+1) = 0;
     for i=1:length(reducedModel.mets)
         if(sum(strcmp([reducedModel.mets{i}],biomassMets))~=0)
             internalIdx=i;
-            if(added==0)
-                reducedModel.S(internalIdx,end+1)=-1;
-                added=1;
-            else
-                reducedModel.S(internalIdx,end)=-1;             
-            end
+            %if(added==0)
+            %reducedModel.S(internalIdx,end+1)=-1;
+            %added=1;
+            %else
+            reducedModel.S(internalIdx,end)=-1;
+            %end
         end
     end
 else
     reducedModel.c(end+1)=0;
     if strcmp(type,'transport')
-        reducedModel.S(internalIdx,end+1)=1;
+        reducedModel.S(internalIdx,end+1)=-1;
     else
         reducedModel.S(internalIdx,end+1)=-1;
     end
@@ -43,7 +44,11 @@ end
 reducedModel.rxnGeneMat(end+1,:)=zeros(1,size(reducedModel.rxnGeneMat,2));
 reducedModel.grRules{end+1}='';
 reducedModel.subSystems{end+1}='';
-reducedModel.rxnNames{end+1}='';
+if strcmp(type,'biomass')
+    reducedModel.rxnNames{end+1}='BIOMASS';
+else
+    reducedModel.rxnNames{end+1}='';
+end
 reducedModel.rules{end+1}='';
 
 addedModel = reducedModel;

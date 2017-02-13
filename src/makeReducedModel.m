@@ -1,11 +1,14 @@
-function reducedModel=makeReducedModel(model,subsystemsToAdd,subsystemsToExcludeIdxs,description)
+function reducedModel=makeReducedModel(model,subsystemsToAdd,subsystemsToExcludeIdxs,description,rxnsMustInclude)
 
 % make manually curated model of 117 reactions that has an FBA solution
 curatedRxnNames = makeCuratedRxnNames(model);
 
 %add reactions from 
 if ~exist('subsystemsToAdd','var')
-    subsystemsToAdd = allSubsystems;
+    subsystemsToAdd = {};
+    if exist('allSubsystems','var')
+        subsystemsToAdd = allSubsystems;
+    end
 end
 if ~exist('subsystemsToExcludeIdxs','var')
     subsystemsToExcludeIdxs = containers.Map;
@@ -29,6 +32,12 @@ for i=1:length(subsystemRxnNames)
       reducedRxnNames=[reducedRxnNames; {subsystemRxnNamesSet{j}}];
     end
   end
+end
+
+if exist('rxnsMustInclude','var')
+    for i=1:length(rxnsMustInclude)
+        reducedRxnNames{end+1} = rxnsMustInclude{i};
+    end
 end
 reducedModel = subselectModel(model,description,reducedRxnNames);
 

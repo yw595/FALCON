@@ -1,0 +1,1 @@
+[reducedConstrainedModelArr2,reactionsConstrainedAddedArr2,ratioConstrainedCentsArr2] = makeFineGrainedReducedModelArr(76,1,model,reducedConstrainedModelArr,ratioConstrainedCentsArr);

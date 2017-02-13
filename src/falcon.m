@@ -1,4 +1,4 @@
-function [v_sol, corrval, nvar, v_all, fTime, fIter, fOpt] = falcon(m, varargin)
+function [v_sol, corrval, nvar, v_all, fTime, fIter, fOpt,f_easyLP,v_easyLP,cost_irrev] = falcon(m, varargin)
 
 % Brandon Barker 2013 - 2014 Based on Kieran Smallbone's script from:
 %                            http://www.biomedcentral.com/1752-0509/6/73
@@ -369,6 +369,7 @@ while sum(~boundsRev) > nR_old
     first_r_group_visited = -1;
     rGrpsPrev = rGrpsUsed;
     rGrpsUsed = 0;
+    benchMarkS1=s1;
     while k < nrxns
         k = k + 1;
         s = r_sd(k);
@@ -450,7 +451,32 @@ if ~dimFail
         %disp(f)
         [v, fOpt, conv, vbasN, cbasN] = easyLP(f, N, b, L, U,     ...
                                                csense, vbasN, cbasN);
-        disp(v)
+        %disp(v)
+        %disp(fOpt)
+        %length(f)
+        %disp(f*v)
+        f_rxn = f(1:nrxns);
+        v_rxn = v(1:nrxns);
+        f_easyLP = f(nrxns+3:end);
+        v_easyLP = v(nrxns+3:end);
+        cost_easyLP = f_easyLP.*v_easyLP';
+        cost_irrev = zeros(nrxns,1);
+        r_group_cons_bycol = (r_group_cons-1-benchMarkS1)/2;
+        cost_naive = abs(r-abs(v_rxn)); cost_naive(isnan(cost_naive))=0;
+        if 1
+            cost_proxy=cost_naive;
+        else
+            cost_proxy=abs(v_rxn);
+        end
+        for i=1:length(f_easyLP)
+            cost_irrev(r_group_cons_bycol==i) = cost_easyLP(i)/sum(r_group_cons_bycol==i);
+            if sum(cost_proxy(r_group_cons_bycol==i))~=0
+                cost_irrev(r_group_cons_bycol==i) = cost_irrev(r_group_cons_bycol==i).*cost_proxy(r_group_cons_bycol==i)/sum(cost_proxy(r_group_cons_bycol==i));
+            else
+                cost_irrev(r_group_cons_bycol==i) = cost_irrev(r_group_cons_bycol==i)/sum(r_group_cons_bycol==i);
+            end
+        end
+        %r_group_cons
     end
 
     % This seems to do more poorly because of how the score can be defined
@@ -655,8 +681,8 @@ if FDEBUG
     toc(t_easy)
 end
 
-solution
-solution.obj
+%solution
+%solution.obj
 % define outputs
 conv = solution.stat == 1;
 svbas = []; %svbas = solution.basis;
@@ -669,7 +695,7 @@ if conv
     if (f'*v0 ~= 0)
         %disp(f)
         %disp(v0)
-        disp(f'*v0)
+        %disp(f'*v0)
     end
     if FDEBUG
         disp(['Convergent optimum is: ' num2str(solution.obj)]);

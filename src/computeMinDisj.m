@@ -1,5 +1,5 @@
 function [rxn_exp, rxn_exp_sd, rxn_rule_group] = ...
-    computeMinDisj(model, genedata_filename, sigma, FDEBUG)
+    computeMinDisj(model, genedata_filename, sigma, FDEBUG,overwriteSDs,overwriteMeans)
 % Requires the cell2csv package (for now; need to change to FIFOs)
 % minDisj needs to be in $PATH (system path)
 
@@ -8,6 +8,12 @@ if ~exist('FDEBUG', 'var')
 end
 if ~exist('sigma', 'var')
     sigma = 0;
+end
+if ~exist('overwriteSDs','var')
+    overwriteSDs = containers.Map;
+end
+if ~exist('overwriteMeans','var')
+    overwritMeans = containers.Map;
 end
 
 ztol = 1e-4;
@@ -57,6 +63,36 @@ end
 
 disp('minDisj HERE')
 [status, cmdout] = system(['minDisj ', genedata_filename, ' ', rfname, ' > ', rfout]);
+if length(keys(overwriteSDs))~=0
+    rftemp = [rfout '_temp'];
+    system(['cp ' rfout ' ' rftemp]);
+    inFI = fopen(rftemp);
+    outFI = fopen(rfout,'w');
+    aLine = fgetl(inFI);
+    lineCount = '0';
+    while aLine ~= -1
+        %if ~isempty(regexp(aLine,'%f\t%f'))
+        lineCount = num2str(str2num(lineCount)+1);
+        fields = strsplit(aLine,'\t');
+        if isKey(overwriteMeans,lineCount)
+            fprintf(outFI,'%f\t',overwriteMeans(lineCount));
+        else
+            %disp(aLine);
+            %disp(fields{1});
+            fprintf(outFI,'%f\t',str2double(fields{1}));
+        end
+        if isKey(overwriteSDs,lineCount)
+            fprintf(outFI,'%f\n',overwriteSDs(lineCount));
+        else
+            fprintf(outFI,'%f\n',str2double(fields{2}));
+        end
+            %else
+            %fprintf(outFI,'%s\n',aLine);
+            %end
+        aLine = fgetl(inFI);
+    end
+    fclose(inFI); fclose(outFI);
+end
 disp('minDisj THERE')
 if status ~= 0
     pause(0.03); %why (or) is this necessary?
