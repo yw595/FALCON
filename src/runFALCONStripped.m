@@ -21,7 +21,7 @@ function [v_falcon objValue cost_rev corr_rho rxn_exp_md_rev] = runFALCONStrippe
     % map gene weighting to reaction weighting
 
     expTime = tic;
-    genedata_filename = '/home/fs01/yw595/temp.csv';
+    genedata_filename = '/mnt/vdb/home/ubuntu2/temp.csv';
     writeData({expressionIDs,expData,expressionSDs},genedata_filename,'\t');
     [rxn_exp_md, rxn_exp_sd_md, rxn_rule_group] = ... 
         computeMinDisj(modelIrrev, genedata_filename,0,true,overwriteSDs,overwriteMeans);

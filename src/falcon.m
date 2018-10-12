@@ -252,6 +252,10 @@ while sum(~boundsRev) > nR_old
     %Preallocate matrix and vectors:
     %  rows:    nmets + LFPunit + model lb/ubs + flux_sum + exp residuals + f_pre,
     %  cols:    nrxns + n + z + exp residual vars
+    nmets
+    nrxns
+    nnnan_irr
+    length(nnan_irr)
     N = spalloc(nmets + 1       + 2*nrxns      + 1        + 2*nnnan_irr   + 1, ...
                 nrxns + 1 + 1 + nnnan_irr            , floor(2.3*nSnz));
     dimFail = false;
@@ -428,6 +432,10 @@ while sum(~boundsRev) > nR_old
         N(objPriorRow, nrxns + 2) = rGrpsUsed*(corrval / rGrpsPrev);
     end
 
+sz_N
+size(N)
+numel(b)
+numel(L)
 if ~all(sz_N == size(N)) || sz_N(1) ~= numel(b) || sz_N(2) ~= numel(L)
     %This seems to only occur very rarely with highly perturbed data,
     %but more investigation may prove insightful. 

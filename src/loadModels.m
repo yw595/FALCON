@@ -1,5 +1,5 @@
 if isunix
-    FALCONDir = '/home/fs01/yw595/MATLAB/FALCON';
+    FALCONDir = '/mnt/vdb/home/ubuntu2/MATLAB/FALCON';
 else
     FAlconDir = 'C:\Users\Yiping Wang\Documents\MATLAB\FALCON';
 end
@@ -7,7 +7,7 @@ load([FALCONDir filesep 'input' filesep 'SigurdssonMouse.mat']);
 origSigurdssonMouse = mouse1415;
 origSigurdssonMouse.rxnNames = {};
 
-origLeeYeast = readCbModel([FALCONDir filesep 'input' filesep 'LeeYeast.xml']);
+%origLeeYeast = readCbModel([FALCONDir filesep 'input' filesep 'LeeYeast.xml']);
 
 load([FALCONDir filesep 'input' filesep 'Recon2.v03.mat']);
 origRecon2 = modelRecon2beta121114_fixed_updatedID;

@@ -22,6 +22,7 @@ mdesc = strrep(model.description, ' ', '_');
 rfid = num2str(randint(1, 1, 10e40));
 rfname = [genedata_filename, '_', mdesc, rfid];
 rfname = strrep(rfname,' ', '');
+model
 cell2csv(rfname, model.grRules,',');
 rfout = [rfname, '_out'];
 nrxns = length(model.rxns);
@@ -97,13 +98,13 @@ disp('minDisj THERE')
 if status ~= 0
     pause(0.03); %why (or) is this necessary?
     disp('try #2...');
-    [status, cmdout] = system(['minDisj ', genedata_filename, ' ', rfname, ' > ', rfout]);
+    [status, cmdout] = system(['/mnt/vdb/home/ubuntu2/minDisj ', genedata_filename, ' ', rfname, ' > ', rfout]);
     if status ~= 0
         pause(3); %why (or) is this necessary?
         disp('try #3...');
-        [status, cmdout] = system(['minDisj ', genedata_filename, ' ', rfname, ' > ', rfout]);
+        [status, cmdout] = system(['/mnt/vdb/home/ubuntu2/minDisj ', genedata_filename, ' ', rfname, ' > ', rfout]);
         if status ~= 0 
-            minDisjCmd = ['minDisj ', genedata_filename, ' ', rfname, ' > ', rfout]
+            minDisjCmd = ['/mnt/vdb/home/ubuntu2/minDisj ', genedata_filename, ' ', rfname, ' > ', rfout]
             disp(['minDisj failed with return code ' num2str(status)]);
             return;
         end
