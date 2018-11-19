@@ -41,13 +41,19 @@ if 1
     end
 end
 
+uniquetissues = unique(values(idstotissue));
+tissuestocount = containers.Map;
+for i=1:length(uniquetissues)
+    tissuestocount([uniquetissues{i} 'young']) = 0;
+    tissuestocount([uniquetissues{i} 'old']) = 0;
+end
 if 1
     coreexpr = {};
     edgeexpr = {};
     coreorigexpr = {};
     edgeorigexpr = {};
-    runFlux = 0;
-    runRand = 0;
+    runFlux = 1;
+    runRand = 1;
     filenames = dir('/mnt/vdb/home/ubuntu2/MATLAB/FALCON/input/rnaseq1051');
     if useGTEX
 	filenames = dir('/mnt/vdb/home/ubuntu2/MATLAB/FALCON/input/gtex');
@@ -92,26 +98,43 @@ if 1
 		    tissue = idstotissue(edgeids{matchesid});
                 end
 		end
-	        if (useGTEX && matchesid~=0 && strcmp(tissue,'Whole Blood')) || ~useGTEX	                          expData = datafields{2}/sum(datafields{2});
+	        %if (useGTEX && matchesid~=0 && strcmp(tissue,'Whole Blood')) || ~useGTEX
+	        if (useGTEX && matchesid~=0) || ~useGTEX			        expData = datafields{2}/sum(datafields{2});
 		    trueExpData = expData;
 		    if noiseCoeff~=0
 			expData = expData.*abs(randn(length(expData),1)*noiseCoeff);
-			expData = expData/sum(expData)
+                        expData = expData/sum(expData);
 		    end
 		    if runRand
 			fluxesArr = {};
                         expr2Arr = {};
 			for k=1:10
 			    if matchescore
-			    noisedata = textscan(fopen(['/mnt/vdb/home/ubuntu2/MATLAB/FALCON/output/createRandomExpr/allrandexpr' num2str(k)]),'%f');
-			    noise = noisedata{1};
-                            fluxesArr{k} = runFluxMethod(max(expData+noise,0),datafields{1},'test',constrainMediumExc(initializeRecon2(origRecon2)),'FALCON',datafields{3});
-                            expr2Arr{k} = obtainFALCONExp(max(expData+noise,0),datafields{1},constrainMediumExc(initializeRecon2(origRecon2)),datafields{3});
+			    tissue = idstotissue(coreids{matchesid});
+                            noisefile = ['/mnt/vdb/home/ubuntu2/MATLAB/FALCON/output/createRandomExpr/allrandexpr' tissue num2str(k)];
+                            if exist(noisefile,'file')% && tissuestocount([tissue 'young'])<3
+			        tissuestocount([tissue 'young']) = tissuestocount([tissue 'young'])+1;
+				noisedata = textscan(fopen(['/mnt/vdb/home/ubuntu2/MATLAB/FALCON/output/createRandomExpr/allrandexpr' tissue num2str(k)]),'%f');
+				noise = noisedata{1};
+				fluxesArr{k} = runFluxMethod(max(expData+noise,0),datafields{1},'test',constrainMediumExc(initializeRecon2(origRecon2)),'FALCON',datafields{3});
+				expr2Arr{k} = obtainFALCONExp(max(expData+noise,0),datafields{1},constrainMediumExc(initializeRecon2(origRecon2)),datafields{3});
 			    else
-			    noisedata = textscan(fopen(['/mnt/vdb/home/ubuntu2/MATLAB/FALCON/output/createRandomExpr/allrandexpr' num2str(k)]),'%f');
-			    noise = noisedata{1};
-                            fluxesArr{k} = runFluxMethod(max(expData+noise,0),datafields{1},'test',constrainMediumExc(initializeRecon2(origRecon2)),'FALCON',datafields{3});
-                            expr2Arr{k} = obtainFALCONExp(max(expData+noise,0),datafields{1},constrainMediumExc(initializeRecon2(origRecon2)),datafields{3});
+		       	        fluxesArr{k} = [];
+                                expr2Arr{k} = [];
+			    end
+			    else
+			    tissue = idstotissue(edgeids{matchesid});
+                            noisefile = ['/mnt/vdb/home/ubuntu2/MATLAB/FALCON/output/createRandomExpr/allrandexpr' tissue num2str(k)];
+                            if exist(noisefile,'file')% && tissuestocount([tissue 'old'])<3
+			        tissuestocount([tissue 'old']) = tissuestocount([tissue 'old'])+1;
+				noisedata = textscan(fopen(['/mnt/vdb/home/ubuntu2/MATLAB/FALCON/output/createRandomExpr/allrandexpr' tissue num2str(k)]),'%f');
+				noise = noisedata{1};
+				fluxesArr{k} = runFluxMethod(max(expData+noise,0),datafields{1},'test',constrainMediumExc(initializeRecon2(origRecon2)),'FALCON',datafields{3});
+				expr2Arr{k} = obtainFALCONExp(max(expData+noise,0),datafields{1},constrainMediumExc(initializeRecon2(origRecon2)),datafields{3});
+			    else
+			        fluxesArr{k} = [];
+                                expr2Arr{k} = [];
+                            end
                             end
 		        end
 		    else
@@ -160,7 +183,7 @@ if 1
 			    tissue = idstotissue(edgeids{matchesid});
                         end
                     end
-		    if strcmp(tissue,'Whole Blood')
+		    %if strcmp(tissue,'Whole Blood')
 			expr = obtainFALCONExp(datafields{2},datafields{1},constrainMediumExc(initializeRecon2(origRecon2)),datafields{3});
 			if ~useGTEX
 			    if ~isempty(regexp(filename,'core'))
@@ -178,7 +201,7 @@ if 1
                                 edgeorigexpr{end+1} = datafields{2}/sum(datafields{2});
 			    end
 			end
-		    end
+		    %end
 		end
 	    end
 	end

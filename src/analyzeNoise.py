@@ -15,18 +15,27 @@ inDir = '/mnt/vdb/home/ubuntu2/MATLAB/FALCON/output/gbmscript/gtex/'
 ages = ['young','old']
 checkedprefixes = []
 fullmap = {}
+samplelim = 3
 for age in ages:
     inputDir1 = inDir+age+'/'
     files = os.listdir(inputDir1)
     agemap = {}
     for afile in files:
-        if afile.find('natural')!=-1 and afile.find('noiseall')!=-1:
+        testFI = open(inputDir1+afile)
+        linecount = 0
+        for line in testFI:
+            linecount += 1
+        testFI.close()
+        if afile.find('natural')!=-1 and afile.find('noiseall')!=-1 and linecount>10:
             prefix = afile[:afile.index('_')]
             commonfilepart = afile[:afile.index('natural')-1]
             if prefix not in checkedprefixes:
                 checkedprefixes.append(prefix)
+                tissue = afile.split('_')[1][6:]
+                if tissue not in agemap:
+                    agemap[tissue] = {}
+                agemap[tissue][prefix] = {}
                 if os.path.exists(inputDir1+commonfilepart):
-                    agemap[prefix] = {}
                     inFI = open(inputDir1+commonfilepart)
                     inFI.readline()
                     triplelist = [[],[],[]]
@@ -38,9 +47,10 @@ for age in ages:
                             else:
                                 appendval = float(words[j])
                             triplelist[j].append(appendval)
-                    agemap[prefix]['nonoise'] = triplelist
-                    for k in range(1,11,1):
-                        inFI = open(inputDir1+commonfilepart+'_naturalnoise'+str(k))
+                    agemap[tissue][prefix]['nonoise'] = triplelist
+                for k in range(1,samplelim+1,1):
+                    if os.path.exists(inputDir1+commonfilepart+'_naturalnoiseall'+str(k)):
+                        inFI = open(inputDir1+commonfilepart+'_naturalnoiseall'+str(k))
                         inFI.readline()
                         triplelist = [[],[],[]]
                         for line in inFI:
@@ -51,108 +61,164 @@ for age in ages:
                                 else:
                                     appendval = float(words[j])
                                 triplelist[j].append(appendval)
-                        agemap[prefix]['naturalnoise'+str(k)] = triplelist
+                        agemap[tissue][prefix]['naturalnoise'+str(k)] = triplelist
     fullmap[age] = agemap
-totalvar = {}
-totalvar['old'] = {}
-totalvar['young'] = {}
-totalvarrxn = {}
-totalvarrxn['old'] = {}
-totalvarrxn['young'] = {}
-rxnpvals = [1 for i in range(7440)]
-rxnrangediffs = [0 for i in range(7440)]
-for age in fullmap:
-    for prefix in fullmap[age]:
-        rxnminarr = ['nan' for i in range(7440)]
-        rxnmaxarr = ['nan' for i in range(7440)]
-        print(age)
-        print(prefix)
-        rxnvalarr = []
-        for k in range(1,11,1):
-            print(k)
-            for l in range(7440):
-                rxnval = fullmap[age][prefix]['naturalnoise'+str(k)][0][l]
-                if rxnminarr[l]=='nan' or rxnval < rxnminarr[l]:
-                    rxnminarr[l] = rxnval
-                if rxnmaxarr[l]=='nan' or rxnval > rxnmaxarr[l]:
-                    rxnmaxarr[l] = rxnval
-                
-        totalvartemp = 0
-        totalvarrxn[age][prefix] = ['nan' for nanidx in range(7440)]
-        for i in range(len(rxnminarr)):
-            if rxnminarr[i]!='nan' and rxnmaxarr[i]!='nan':
-                totalvartemp += (rxnmaxarr[i]-rxnminarr[i])
-                totalvarrxn[age][prefix][i] = (rxnmaxarr[i]-rxnminarr[i])
-        totalvar[age][prefix] = totalvartemp
-[totalstat, totalpval] = scipy.stats.mannwhitneyu(totalvar['young'].values(),totalvar['old'].values())
-totalvararr = [[],[]]
-for i in range(7440):
-    rxnfluxlist = [[],[]]
-    ages = ['young','old']
-    for j in range(len(ages)):
-        for prefix in totalvarrxn[ages[j]]:
-            rxnfluxlist[j].append(totalvarrxn[ages[j]][prefix][i]+1000)
-    allrxnfluxmean = copy.deepcopy(rxnfluxlist[0])
-    allrxnfluxmean.extend(rxnfluxlist[1])
-    allrxnfluxmean = np.mean(allrxnfluxmean)
-    for j in range(len(ages)):
-        for k in range(len(rxnfluxlist[j])):
-            rxnfluxlist[j][k] = abs((rxnfluxlist[j][k]-allrxnfluxmean)/allrxnfluxmean)
-    if max(rxnfluxlist[0])!=max(rxnfluxlist[1]) and min(rxnfluxlist[0])!=min(rxnfluxlist[1]):
-        [rxnstat, rxnpval] = scipy.stats.mannwhitneyu(rxnfluxlist[0],rxnfluxlist[1])
-        rxnpvals[i] = rxnpval
-        rxnrangediffs[i] = np.mean(rxnfluxlist[0])-np.mean(rxnfluxlist[1])
-inFI = open('/mnt/vdb/home/ubuntu2/recon2.txt')
-recon2rxns = []
-recon2rxnnames = []
-recon2subs = []
-for line in inFI:
-    words = line.strip().split('\t')
-    recon2rxns.append(words[0])
-    recon2rxnnames.append(words[1])
-    recon2subs.append(words[2])
-inFI.close()
 
-rxnpvals = np.array(rxnpvals)
-recon2subs = np.array(recon2subs)
-rxnrangediffs = np.array(rxnrangediffs)
-uniqSubs = np.unique(recon2subs)
-numrxnspos = []
-numsigrxnspos = []
-hypergeomparrpos = []
-for sub in uniqSubs:
-    N = len(recon2rxns)
-    M = sum(recon2subs==sub)
-    K = sum(np.logical_and(rxnpvals<.05,rxnrangediffs>0))
-    x = sum(np.logical_and(np.logical_and(rxnpvals<.05,rxnrangediffs>0),recon2subs==sub))
-    numrxnspos.append(M)
-    numsigrxnspos.append(x)
-    hypergeomparrpos.append(1-hypergeom.cdf(x-1,N,M,K))
-numrxnsneg = []
-numsigrxnsneg = []
-hypergeomparrneg = []
-for sub in uniqSubs:
-    N = len(recon2rxns)
-    M = sum(recon2subs==sub)
-    K = sum(np.logical_and(rxnpvals<.05,rxnrangediffs<0))
-    x = sum(np.logical_and(np.logical_and(rxnpvals<.05,rxnrangediffs<0),recon2subs==sub))
-    numrxnsneg.append(M)
-    numsigrxnsneg.append(x)
-    hypergeomparrneg.append(1-hypergeom.cdf(x-1,N,M,K))
-labelarr = []
-valuesarr = []
-youngvals = totalvar['young'].values()
-for i in range(len(youngvals)):
-    labelarr.append('young')
-    valuesarr.append(youngvals[i])
-oldvals = totalvar['old'].values()
-for i in range(len(oldvals)):
-    labelarr.append('old')
-    valuesarr.append(oldvals[i])
-writeData([labelarr,valuesarr],'/mnt/vdb/home/ubuntu2/youngOldPopDiff.txt',delimiter='\t',headers=['label','overallfluxdiff'])
-writeData([recon2rxns,recon2rxnnames,recon2subs,rxnpvals,rxnrangediffs],'/mnt/vdb/home/ubuntu2/youngOldStabilityDiffRxns.txt',delimiter='\t',headers=['rxn','rxnname','sub','wilcoxon p-val','average flux range diff'])
-writeData([uniqSubs,numrxnspos,numsigrxnspos,hypergeomparrpos],'/mnt/vdb/home/ubuntu2/youngOldStabilityDiffSubsPos.txt',delimiter='\t',headers=['sub','num reactions','num sig reactions','hypergeometric p-val'])
-writeData([uniqSubs,numrxnsneg,numsigrxnsneg,hypergeomparrneg],'/mnt/vdb/home/ubuntu2/youngOldStabilityDiffSubsNeg.txt',delimiter='\t',headers=['sub','num reactions','num sig reactions','hypergeometric p-val'])
+tissuescommon = []
+for tissue in fullmap['young'].keys():
+    if tissue not in tissuescommon:
+        tissuescommon.append(tissue)
+for tissue in fullmap['old'].keys():
+    if tissue not in tissuescommon:
+        tissuescommon.append(tissue)
+tissuessubstable = []
+tissuessubsheader = []
+for tissue in tissuescommon:
+    totalvar = {}
+    totalvar['old'] = {}
+    totalvar['young'] = {}
+    totalvarrxn = {}
+    totalvarrxn['old'] = {}
+    totalvarrxn['young'] = {}
+    totalvarrxn2 = {}
+    totalvarrxn2['old'] = {}
+    totalvarrxn2['young'] = {}
+    rxnpvals = [1 for i in range(7440)]
+    rxnrangediffs = [0 for i in range(7440)]
+    for age in fullmap:
+        for prefix in fullmap[age][tissue]:
+            totalvarrxn2[age][prefix] = [['nan' for nanidx2 in range(samplelim)] for nanidx in range(7440)]
+            rxnminarr = ['nan' for i in range(7440)]
+            rxnmaxarr = ['nan' for i in range(7440)]
+            print(age)
+            print(prefix)
+            rxnvalarr = []
+            for k in range(1,samplelim+1,1):
+                print(k)
+                for l in range(7440):
+                    rxnval = fullmap[age][tissue][prefix]['naturalnoise'+str(k)][0][l]
+                    if rxnval!='nan':
+                        totalvarrxn2[age][prefix][l][k-1] = rxnval
+                    if rxnminarr[l]=='nan' or rxnval < rxnminarr[l]:
+                        rxnminarr[l] = rxnval
+                    if rxnmaxarr[l]=='nan' or rxnval > rxnmaxarr[l]:
+                        rxnmaxarr[l] = rxnval
+
+            totalvartemp = 0
+            totalvarrxn[age][prefix] = ['nan' for nanidx in range(7440)]
+            for i in range(len(rxnminarr)):
+                if rxnminarr[i]!='nan' and rxnmaxarr[i]!='nan':
+                    totalvartemp += (rxnmaxarr[i]-rxnminarr[i])
+                    totalvarrxn[age][prefix][i] = (rxnmaxarr[i]-rxnminarr[i])
+            totalvar[age][prefix] = totalvartemp
+    [totalstat, totalpval] = scipy.stats.mannwhitneyu(totalvar['young'].values(),totalvar['old'].values())
+    totalvararr = [[],[]]
+    testrealall = True
+    for i in range(7440):
+        rxnfluxlist = [[],[]]
+        ages = ['young','old']
+        allnum = True
+        for j in range(len(ages)):
+            for prefix in totalvarrxn[ages[j]]:
+                if testrealall:
+                    for k in range(samplelim):
+                        if totalvarrxn2[ages[j]][prefix][i][k]=='nan':
+                            allnum = False
+        for j in range(len(ages)):
+            for prefix in totalvarrxn[ages[j]]:
+                if testrealall:
+                    for k in range(samplelim):
+                        if not allnum:
+                            #print('HERE')
+                            rxnfluxlist[j].append(0)
+                        else:
+                            rxnfluxlist[j].append(totalvarrxn2[ages[j]][prefix][i][k]+1000)
+                else:
+                    rxnfluxlist[j].append(totalvarrxn[ages[j]][prefix][i]+1000)
+        allrxnfluxmean = copy.deepcopy(rxnfluxlist[0])
+        allrxnfluxmean.extend(rxnfluxlist[1])
+        allrxnfluxmean = np.mean(allrxnfluxmean)
+        for j in range(len(ages)):
+            for k in range(len(rxnfluxlist[j])):
+                rxnfluxlist[j][k] = abs((rxnfluxlist[j][k]-allrxnfluxmean)/allrxnfluxmean)
+        if max(rxnfluxlist[0])!=max(rxnfluxlist[1]) and min(rxnfluxlist[0])!=min(rxnfluxlist[1]) and allrxnfluxmean!=0:
+            [rxnstat, rxnpval] = scipy.stats.mannwhitneyu(rxnfluxlist[0],rxnfluxlist[1])
+            #nonsense = nonsense+1
+            rxnpvals[i] = rxnpval
+            rxnrangediffs[i] = np.mean(rxnfluxlist[0])-np.mean(rxnfluxlist[1])
+    inFI = open('/mnt/vdb/home/ubuntu2/recon2.txt')
+    recon2rxns = []
+    recon2rxnnames = []
+    recon2subs = []
+    for line in inFI:
+        words = line.strip().split('\t')
+        recon2rxns.append(words[0])
+        recon2rxnnames.append(words[1])
+        recon2subs.append(words[2])
+    inFI.close()
+
+    rxnpvals = np.array(rxnpvals)
+    recon2subs = np.array(recon2subs)
+    rxnrangediffs = np.array(rxnrangediffs)
+    uniqSubs = np.unique(recon2subs)
+    numrxnspos = []
+    numsigrxnspos = []
+    hypergeomparrpos = []
+    for sub in uniqSubs:
+        N = len(recon2rxns)
+        M = sum(recon2subs==sub)
+        K = sum(np.logical_and(rxnpvals<.05,rxnrangediffs>0))
+        x = sum(np.logical_and(np.logical_and(rxnpvals<.05,rxnrangediffs>0),recon2subs==sub))
+        numrxnspos.append(M)
+        numsigrxnspos.append(x)
+        hypergeomparrpos.append(1-hypergeom.cdf(x-1,N,M,K))
+    numrxnsneg = []
+    numsigrxnsneg = []
+    hypergeomparrneg = []
+    for sub in uniqSubs:
+        N = len(recon2rxns)
+        M = sum(recon2subs==sub)
+        K = sum(np.logical_and(rxnpvals<.05,rxnrangediffs<0))
+        x = sum(np.logical_and(np.logical_and(rxnpvals<.05,rxnrangediffs<0),recon2subs==sub))
+        numrxnsneg.append(M)
+        numsigrxnsneg.append(x)
+        hypergeomparrneg.append(1-hypergeom.cdf(x-1,N,M,K))
+    labelarr = []
+    valuesarr = []
+    youngvals = totalvar['young'].values()
+    for i in range(len(youngvals)):
+        labelarr.append('young')
+        valuesarr.append(youngvals[i])
+    oldvals = totalvar['old'].values()
+    for i in range(len(oldvals)):
+        labelarr.append('old')
+        valuesarr.append(oldvals[i])
+    writeData([labelarr,valuesarr],'/mnt/vdb/home/ubuntu2/youngOldPopDiff'+tissue+'.txt',delimiter='\t',headers=['label','overallfluxdiff'])
+    writeData([recon2rxns,recon2rxnnames,recon2subs,rxnpvals,rxnrangediffs],'/mnt/vdb/home/ubuntu2/youngOldStabilityDiffRxns'+tissue+'.txt',delimiter='\t',headers=['rxn','rxnname','sub','wilcoxon p-val','average flux range diff'])
+    if len(tissuessubstable)==0:
+        tissuessubstable.append(list(uniqSubs))
+        tissuessubsheader.append('tissue')    
+    writeData([uniqSubs,numrxnspos,numsigrxnspos,hypergeomparrpos],'/mnt/vdb/home/ubuntu2/youngOldStabilityDiffSubsPos'+tissue+'.txt',delimiter='\t',headers=['sub','num reactions','num sig reactions','hypergeometric p-val'])
+    writeData([uniqSubs,numrxnsneg,numsigrxnsneg,hypergeomparrneg],'/mnt/vdb/home/ubuntu2/youngOldStabilityDiffSubsNeg'+tissue+'.txt',delimiter='\t',headers=['sub','num reactions','num sig reactions','hypergeometric p-val'])
+    tissuessubstable.append(hypergeomparrpos)
+    tissuessubstable.append(hypergeomparrneg)
+    tissuessubsheader.append(tissue+' pos')
+    tissuessubsheader.append(tissue+' neg')
+writetable = []
+sumcol = [0 for i in range(len(tissuessubstable[0]))]
+for i in range(len(tissuessubstable[0])):
+    for j in range(1,len(tissuessubstable)):
+        if tissuessubstable[j][i]<.005:
+            sumcol[i] += 1
+tissuessubstable[0].append('num sig subsystems in tissue')
+writetable.append(tissuessubstable[0])
+#writetable.append('num sig subsystems in tissue')
+for i in range(1,len(tissuessubstable)):
+    tissuessubstable[i].append(sum(np.array(tissuessubstable[i])<.005))
+    writetable.append(tissuessubstable[i])
+writetable.append(sumcol)
+tissuessubsheader.append('num sig occurrences in subsystem')
+writeData(writetable,'/mnt/vdb/home/ubuntu2/youngOldAllTissues.txt',delimiter='\t',headers=tissuessubsheader)
 nonsense = nonsense+1
 
 inDir = '/mnt/vdb/home/ubuntu2/MATLAB/FALCON/output/gbmscript/gtex/'

@@ -22,7 +22,7 @@ mdesc = strrep(model.description, ' ', '_');
 rfid = num2str(randint(1, 1, 10e40));
 rfname = [genedata_filename, '_', mdesc, rfid];
 rfname = strrep(rfname,' ', '');
-model
+%writeData({model.grRules},rfname,',');
 cell2csv(rfname, model.grRules,',');
 rfout = [rfname, '_out'];
 nrxns = length(model.rxns);
@@ -63,6 +63,8 @@ if sigma > 0
 end
 
 disp('minDisj HERE')
+genedata_filename
+rfname
 [status, cmdout] = system(['minDisj ', genedata_filename, ' ', rfname, ' > ', rfout]);
 if length(keys(overwriteSDs))~=0
     rftemp = [rfout '_temp'];

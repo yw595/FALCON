@@ -24,65 +24,91 @@ outputDir1 = '/mnt/vdb/home/ubuntu2/MATLAB/FALCON/output/createRandomExpr';
 if ~exist(outputDir1,'dir')
     mkdir(outputDir1);
 end
-coremean = [];
-for i=1:length(coreorigexpr{1})
-    ithExpr = [];
-    for j=1:length(coreorigexpr)
-	ithExpr(j) = coreorigexpr{j}(i);
+tissuestomeasure = unique(values(idstotissue));
+
+for z1=7:length(tissuestomeasure)
+    coreidszth = {};
+    coreorigexprzth = {};
+    for i=1:length(coreids)
+	if strcmp(idstotissue(coreids{i}),tissuestomeasure{z1})
+	    coreidszth{end+1} = coreids{i};
+            coreorigexprzth{end+1} = coreorigexpr{i};
+        end
     end
-    if ~any(isnan(ithExpr))
-        coremean(i) = mean(ithExpr);
-    else
-        coremean(i) = NaN;
+    edgeidszth = {};
+    edgeorigexprzth = {};
+    for i=1:length(edgeids)
+	if strcmp(idstotissue(edgeids{i}),tissuestomeasure{z1})
+	    edgeidszth{end+1} = edgeids{i};
+            edgeorigexprzth{end+1} = edgeorigexpr{i};
+        end
     end
-end
-edgemean = [];
-for i=1:length(edgeorigexpr{1})
-    ithExpr = [];
-    for j=1:length(edgeorigexpr)
-	ithExpr(j) = edgeorigexpr{j}(i);
+
+    if length(edgeorigexprzth)==0 || length(coreorigexprzth)==0
+	  continue;
     end
-    if ~any(isnan(ithExpr))
-        edgemean(i) = mean(ithExpr);
-    else
-        edgemean(i) = NaN;
-    end
-end
-    usecore = 1;
-useedge = 1;
-for z=1:100
-    z
-    randvec = [];
-    for i=1:length(edgeorigexpr{1})
-	ithExpr = [];
-        if useedge
-	    for j=1:length(edgeorigexpr)
-		ithExpr(end+1) = edgeorigexpr{j}(i);
-	    end
-	end
-	if usecore
-	    for j=1:length(coreorigexpr)
-		ithExpr(end+1) = coreorigexpr{j}(i);
-	    end
-	end
 	
+    coremean = [];
+    for i=1:length(coreorigexprzth{1})
+	ithExpr = [];
+	for j=1:length(coreorigexprzth)
+	    ithExpr(j) = coreorigexprzth{j}(i);
+	end
 	if ~any(isnan(ithExpr))
-	    randvec(i) = quantile(ithExpr,rand(1));
+	    coremean(i) = mean(ithExpr);
 	else
-	    randvec(i) = NaN;
+	    coremean(i) = NaN;
 	end
     end
-    if useedge==1 && usecore==0
-        randvec = randvec-edgemean;
-        writeData({randvec},[outputDir1 '/edgerandexpr' num2str(z)],'\t');
+    edgemean = [];
+    for i=1:length(edgeorigexprzth{1})
+	ithExpr = [];
+	for j=1:length(edgeorigexprzth)
+	    ithExpr(j) = edgeorigexprzth{j}(i);
+	end
+	if ~any(isnan(ithExpr))
+	    edgemean(i) = mean(ithExpr);
+	else
+	    edgemean(i) = NaN;
+	end
     end
-    if useedge==0 && usecore==1
-        randvec = randvec-coremean;
-        writeData({randvec},[outputDir1 '/corerandexpr' num2str(z)],'\t');
-    end
-    if useedge==1 && usecore==1
-      allmean = (edgemean*length(edgeorigexpr)+coremean*length(coreorigexpr))/(length(edgeorigexpr)+length(coreorigexpr));
-        randvec = randvec-allmean;
-        writeData({randvec},[outputDir1 '/allrandexpr' num2str(z)],'\t');
+    usecore = 1;
+    useedge = 1;
+    for z=1:100
+	tissuestomeasure{z1}
+	z
+	randvec = [];
+	for i=1:length(edgeorigexprzth{1})
+	    ithExpr = [];
+	    if useedge
+		for j=1:length(edgeorigexprzth)
+		    ithExpr(end+1) = edgeorigexprzth{j}(i);
+		end
+	    end
+	    if usecore
+		for j=1:length(coreorigexprzth)
+		    ithExpr(end+1) = coreorigexprzth{j}(i);
+		end
+	    end
+
+	    if ~any(isnan(ithExpr))
+		randvec(i) = quantile(ithExpr,rand(1));
+	    else
+		randvec(i) = NaN;
+	    end
+	end
+	if useedge==1 && usecore==0
+	    randvec = randvec-edgemean;
+            writeData({randvec},[outputDir1 '/edgerandexpr' tissuestomeasure{z1} num2str(z)],'\t');
+	end
+	if useedge==0 && usecore==1
+	    randvec = randvec-coremean;
+            writeData({randvec},[outputDir1 '/corerandexpr' tissuestomeasure{z1} num2str(z)],'\t');
+	end
+	if useedge==1 && usecore==1
+	    allmean = (edgemean*length(edgeorigexprzth)+coremean*length(coreorigexprzth))/(length(edgeorigexprzth)+length(coreorigexprzth));
+	    randvec = randvec-allmean;
+            writeData({randvec},[outputDir1 '/allrandexpr' tissuestomeasure{z1} num2str(z)],'\t');
+	end
     end
 end
